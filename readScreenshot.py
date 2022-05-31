@@ -48,7 +48,7 @@ def extractionData(image_name_list):
         gray_img = ImageEnhance.Color(crop_image).enhance(0.0)
         cont_img = ImageEnhance.Contrast(gray_img).enhance(3.0)
         # blur_img = gray_img.filter(ImageFilter.BLUR)
-        edge_img = ImageEnhance.Sharpness(cont_img).enhance(2.0)
+        edge_img = ImageEnhance.Sharpness(cont_img).enhance(2.2)
         edge_img = edge_img.filter(ImageFilter.DETAIL)
 
         # edge_img.show()
@@ -56,8 +56,9 @@ def extractionData(image_name_list):
         text = pytesseract.image_to_string(edge_img, lang='kor+eng')
 
         mo = time_re.search(text)
-        data.append(str(mo.group(1)) + ':' + str(mo.group(2)) + ':' + str(mo.group(3)))
+        if mo:
+            data.append(str(mo.group(1)) + ':' + str(mo.group(2)) + ':' + str(mo.group(3)))
 
-        list.append(data)
+            list.append(data)
 
     return list
