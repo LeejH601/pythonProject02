@@ -37,7 +37,9 @@ def extractionData(image_name_list):
         # edge_img.show()
 
         text = pytesseract.image_to_string(edge_img, lang='kor')
-        data.append(text.replace('\n', ''))
+        text = text.replace('\n', '')
+        text = text.replace('.',' ')
+        data.append(text)
 
         crop_image = image.crop((270, 270, 520, 330))
         width, height = crop_image.size
