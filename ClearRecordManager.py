@@ -21,6 +21,16 @@ def insertData(data):
     clear_record[data[0]].append(data[1])
 
 
+def testSetRaod():
+    data_list = readScreenshot.extractionData(image_list)
+    for data in data_list:
+        insertData(data)
+
+    for quest_name, times in clear_record.items():
+        for time in times:
+            print(quest_name, time)
+
+
 if __name__ == '__main__':
     data_list = readScreenshot.extractionData(image_list)
     for data in data_list:
