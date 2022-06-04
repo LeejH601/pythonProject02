@@ -6,6 +6,7 @@ import re
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 plt.style.use('dark_background')
 
 
@@ -32,19 +33,25 @@ def extractionData(image_name_list):
 
         img_blurred = cv2.GaussianBlur(img_gray, ksize=(7,7),sigmaX=1.1)
 
-        img_thresh = cv2.adaptiveThreshold(
-            img_blurred,
-            maxValue=255.0,
-            adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            thresholdType=cv2.THRESH_BINARY,
-            blockSize=49,
-            C=13
-        )
+        # img_thresh = cv2.adaptiveThreshold(
+        #     img_blurred,
+        #     maxValue=255.0,
+        #     adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #     thresholdType=cv2.THRESH_BINARY,
+        #     blockSize=49,
+        #     C=13
+        # )
+        _, img_thresh = cv2.threshold(img_blurred, 120, 255, cv2.THRESH_BINARY)
+
+        # plt.figure(figsize=(11, 7))
+        # plt.imshow(img_thresh, cmap='gray')
+        #
+        # plt.show()
 
         contours, _= cv2.findContours(img_thresh, mode=cv2.RETR_LIST, method=cv2.CHAIN_APPROX_SIMPLE)
 
         temp_img = np.zeros((height,width,channel),dtype=np.uint8)
-        cv2.drawContours(temp_img,contours=contours,contourIdx=-1,color=(255,255,255))
+        # cv2.drawContours(temp_img,contours=contours,contourIdx=-1,color=(255,255,255))
 
         img_croped_quest = cv2.getRectSubPix(
             img_gray,
@@ -52,78 +59,44 @@ def extractionData(image_name_list):
             center=(300, 155)
         )
 
-        # img_croped_time = cv2.getRectSubPix(
-        #     temp_img,
-        #     patchSize=(250, 40),
-        #     center=(395, 300)
-        # )
-        #
+        img_croped_time = cv2.getRectSubPix(
+            img_thresh,
+            patchSize=(250, 40),
+            center=(395, 300)
+        )
+
         # img_croped_time = cv2.GaussianBlur(img_croped_time,
         #                                     ksize=(1,1),sigmaX=0)
         # _,img_croped_time = cv2.threshold(img_croped_time,
-        #                                    thresh=0.0,
+        #                                    thresh=100,
         #                                    maxval=255.0,
         #                                    type=cv2.THRESH_BINARY)
         # img_croped_time = cv2.copyMakeBorder(img_croped_time,
-        #                                       top=5,
-        #                                       bottom=5,
-        #                                       left=5,
-        #                                       right=5,
+        #                                       top=1,
+        #                                       bottom=1,
+        #                                       left=1,
+        #                                       right=1,
         #                                       borderType=cv2.BORDER_CONSTANT,
         #                                       value=(0,0,0))
 
         text = pytesseract.image_to_string(img_croped_quest, lang='kor')
         text = text.replace('\n', '')
         # print(text)
-        # text = pytesseract.image_to_string(img_croped_time, lang='kor',config='--psm 6')
-        # print(text)
+        test_text = pytesseract.image_to_string(img_croped_time, lang=None)
+        time_text = re.sub(r'[^0-9]','',test_text)
+        # print(time_text)
+
+        if len(time_text) > 5:
+            clear_time = datetime.datetime.strptime(time_text, '%M%S%f')
+            time_text = clear_time.strftime('%M:%S:') + clear_time.strftime('%f')[:2]
+            print(time_text)
+            data = [text, time_text]
+            list.append(data)
+
         # plt.figure(figsize=(11,7))
-        # plt.imshow(img_croped_quest, cmap='gray')
+        # plt.imshow(img_croped_time, cmap='gray')
         #
         # plt.show()
-
-        img = Image.open(img_name)
-        # edge_img = img.filter(ImageFilter.FIND_EDGES )
-
-        image = img.copy()
-        data = []
-        data.append(text)
-
-        # crop_image = image.crop((100, 130, 500, 180))
-        # width, height = crop_image.size
-        # crop_image = crop_image.resize((width * 3, height * 3), Image.ANTIALIAS)
-        #
-        # gray_img = ImageEnhance.Color(crop_image).enhance(0.0)
-        # cont_img = ImageEnhance.Contrast(gray_img).enhance(2.0)
-        # # blur_img = gray_img.filter(ImageFilter.BLUR)
-        # edge_img = ImageEnhance.Sharpness(cont_img).enhance(2.0)
-        #
-        # # edge_img.show()
-        #
-        # text = pytesseract.image_to_string(edge_img, lang='kor')
-        # text = text.replace('\n', '')
-        # text = text.replace('.',' ')
-        # data.append(text)
-
-        crop_image = image.crop((270, 270, 520, 330))
-        width, height = crop_image.size
-        crop_image = crop_image.resize((width * 2, height * 2), Image.ANTIALIAS)
-
-        gray_img = ImageEnhance.Color(crop_image).enhance(0.0)
-        cont_img = ImageEnhance.Contrast(gray_img).enhance(3.0)
-        # blur_img = gray_img.filter(ImageFilter.BLUR)
-        edge_img = ImageEnhance.Sharpness(cont_img).enhance(2.2)
-        edge_img = edge_img.filter(ImageFilter.DETAIL)
-
-        # edge_img.show()
-
-        text = pytesseract.image_to_string(edge_img, config='--psm 6' )
-
-        mo = time_re.search(text)
-        if mo:
-            data.append(str(mo.group(1)) + ':' + str(mo.group(2)) + ':' + str(mo.group(3)))
-
-            list.append(data)
 
     return list
 

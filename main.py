@@ -8,7 +8,6 @@ from tkinter.ttk import *
 from tkinter import filedialog
 import ClearRecordManager as CRM
 from functools import partial
-from tkinter.tix import *
 
 
 def stop(event=None):
@@ -80,7 +79,7 @@ if __name__ == '__main__':
     recordedAdrs_select_Button = Button(second_label_frame, text='...', command=selectFolder_r, width=2)
     recordedAdrs_select_Button.pack(side=RIGHT, expand=False, padx=5, pady=2)
 
-    address_of_record_data_entry = Entry(second_label_frame, width=70,state=UNDERLINE)
+    address_of_record_data_entry = Entry(second_label_frame, width=70)
     # data_entry.bind('<Return>', )
     address_of_record_data_entry.pack(side=RIGHT, pady=5, padx=5)
     address_of_record_data_entry.insert(0, recodeed_address)
@@ -89,7 +88,7 @@ if __name__ == '__main__':
     main_list_frame = LabelFrame(height=50)
     main_list_frame.pack(expand=True, side=LEFT, fill=BOTH, pady=5, padx=5)
 
-    ScrolledWin
+
     main_list_scrollbar = tkinter.ttk.Scrollbar(
         main_list_frame,
         orient=VERTICAL,
