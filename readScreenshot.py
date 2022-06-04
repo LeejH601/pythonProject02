@@ -73,6 +73,7 @@ def extractionData(image_name_list):
         #                                       value=(0,0,0))
 
         text = pytesseract.image_to_string(img_croped_quest, lang='kor')
+        text = text.replace('\n', '')
         # print(text)
         # text = pytesseract.image_to_string(img_croped_time, lang='kor',config='--psm 6')
         # print(text)

@@ -7,6 +7,8 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import filedialog
 import ClearRecordManager as CRM
+from functools import partial
+from tkinter.tix import *
 
 
 def stop(event=None):
@@ -26,17 +28,16 @@ def selectFolder_sht():
     address_of_steamSht_entry.insert(0,recodeed_address)
 
 
-def select_clear_record(event=None):
-    selection = main_listbox.curselection()
-    text = main_listbox.get(selection)
+def select_clear_record(index):
+    questName = quest_list[index]['text']
 
-    
     time_listbox.delete(0, END)
     index = 0
-    for time in CRM.clear_record[text]:
-        time_listbox.insert(index, text + '\t' + time)
+    for time in CRM.clear_record[questName]:
+        time_listbox.insert(index, questName + '\t' + time)
         index+=1
     time_listbox.update()
+
 
 
 
@@ -88,21 +89,40 @@ if __name__ == '__main__':
     main_list_frame = LabelFrame(height=50)
     main_list_frame.pack(expand=True, side=LEFT, fill=BOTH, pady=5, padx=5)
 
+    ScrolledWin
     main_list_scrollbar = tkinter.ttk.Scrollbar(
         main_list_frame,
         orient=VERTICAL,
-        command=YView
+        command=main_list_frame
     )
     main_list_scrollbar.pack(side=RIGHT, fill=BOTH)
 
-    main_listbox = Listbox(main_list_frame)
-    main_listbox.pack(fill=BOTH, pady=5,padx=5)
-    main_listbox.bind('<<ListboxSelect>>', select_clear_record)
+    # main_listbox = Listbox(main_list_frame)
+    # main_listbox.pack(fill=BOTH, pady=5,padx=5)
+    # main_listbox.bind('<<ListboxSelect>>', select_clear_record)
 
+    quest_list = []
     index = 0
     for quest_name in CRM.clear_record.keys():
-        main_listbox.insert(index,quest_name)
+        quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
+        quest_button.pack(fill=BOTH)
+        quest_list.append(quest_button)
         index += 1
+    for quest_name in CRM.clear_record.keys():
+        quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
+        quest_button.pack(fill=BOTH)
+        quest_list.append(quest_button)
+        index += 1
+    for quest_name in CRM.clear_record.keys():
+        quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
+        quest_button.pack(fill=BOTH)
+        quest_list.append(quest_button)
+        index += 1
+
+    # index = 0
+    # for quest_name in CRM.clear_record.keys():
+    #     main_listbox.insert(index,quest_name)
+    #     index += 1
 
 
     time_list_frame = LabelFrame()
