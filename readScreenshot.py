@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+import os
 plt.style.use('dark_background')
 
 
@@ -21,7 +22,11 @@ time_re = re.compile(r'''
         ''', re.VERBOSE)
 
 
-def extractionData(image_name_list):
+
+
+
+
+def extractionData(image_name_list, root=None):
     list = []
 
     for img_name in image_name_list:
@@ -53,6 +58,12 @@ def extractionData(image_name_list):
         temp_img = np.zeros((height,width,channel),dtype=np.uint8)
         # cv2.drawContours(temp_img,contours=contours,contourIdx=-1,color=(255,255,255))
 
+        img_croped_level = cv2.getRectSubPix(
+            img_original,
+            patchSize=(150, 30),
+            center=(230, 115)
+        )
+
         img_croped_quest = cv2.getRectSubPix(
             img_gray,
             patchSize=(400, 50),
@@ -79,6 +90,9 @@ def extractionData(image_name_list):
         #                                       borderType=cv2.BORDER_CONSTANT,
         #                                       value=(0,0,0))
 
+        # level_text = pytesseract.image_to_string(img_croped_level, lang='eng')
+        # print(level_text)
+
         text = pytesseract.image_to_string(img_croped_quest, lang='kor')
         text = text.replace('\n', '')
         # print(text)
@@ -88,17 +102,49 @@ def extractionData(image_name_list):
 
         if len(time_text) > 5:
             clear_time = datetime.datetime.strptime(time_text, '%M%S%f')
-            time_text = clear_time.strftime('%M:%S:') + clear_time.strftime('%f')[:2]
-            print(time_text)
-            data = [text, time_text]
+            # time_text = clear_time.strftime('%M:%S:') + clear_time.strftime('%f')[:2]
+            # print(time_text)
+            path = root + '/' + str(text)
+            try:
+                os.makedirs(path)
+            except OSError:
+                if not os.path.isdir(path):
+                    raise
+            time_text = clear_time.strftime('%M분 %S초 ') + clear_time.strftime('%f')[:2]
+            final_path = path + '/' + text + ' ' + time_text + '.jpg'
+            result, encoded_img_ori = cv2.imencode('.jpg', img_original)
+            if result:
+                with open(final_path, mode='w+b') as f:
+                    encoded_img_ori.tofile(f)
+
+            data = [text, clear_time, final_path]
             list.append(data)
 
+        else:
+            path = root + '/분류실패'
+            try:
+                os.makedirs(path)
+            except OSError:
+                if not os.path.isdir(path):
+                    raise
+
+            final_path = path + '/' + img_name
+            result, encoded_img_ori = cv2.imencode('.jpg', img_original)
+            if result:
+                with open(final_path, mode='w+b') as f:
+                    encoded_img_ori.tofile(f)
+
+
+
         # plt.figure(figsize=(11,7))
-        # plt.imshow(img_croped_time, cmap='gray')
+        # plt.imshow(img_croped_level, cmap='gray')
         #
         # plt.show()
 
+
     return list
+
+
 
 
 if __name__ == '__main__':

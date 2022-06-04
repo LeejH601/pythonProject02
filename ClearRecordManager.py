@@ -1,5 +1,8 @@
 import readScreenshot
 from collections import defaultdict
+import json
+import datetime
+import os
 
 
 clear_record = defaultdict(list)
@@ -18,17 +21,74 @@ image_list = [
     ]
 
 def insertData(data):
-    clear_record[data[0]].append(data[1])
+    clear_record[data[0]].append([data[1],data[2]])
 
 
-def testSetRaod():
-    data_list = readScreenshot.extractionData(image_list)
+def extractScreenshot(path):
+    image_name_list = []
+    image_name_list.append(path)
+    readScreenshot.extractionData(image_name_list)
+
+
+def testSetRaod(root=None):
+    data_list = readScreenshot.extractionData(image_list, root)
     for data in data_list:
         insertData(data)
 
     for quest_name, times in clear_record.items():
         for time in times:
             print(quest_name, time)
+
+
+
+def sortQuest(isAscending=True):
+    if isAscending:
+        pass
+
+
+def sortQuestByTime(isAscending=True):
+    if isAscending:
+        for quest, value in clear_record.items():
+            value.sort(key=lambda x:x[0])
+    else:
+        for quest, value in clear_record.items():
+            value.sort(key=lambda x:x[0],reverse=True)
+
+
+
+
+def saverecord(root):
+    sortQuestByTime()
+    clear_record_json_format = defaultdict(list)
+
+    for key, values in clear_record.items():
+        for time, path in values:
+            time_text = time.strftime('%M:%S:') + time.strftime('%f')[:2]
+            clear_record_json_format[key].append([time_text, path])
+
+    try:
+        os.makedirs(root)
+    except OSError:
+        if not os.path.isdir(root):
+            raise
+
+    path = root + '/data.json'
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(clear_record_json_format, f, indent='\t')
+
+
+def loadrecord(root):
+    global  clear_record
+
+    path = root + '/data.json'
+    with open(path, 'r', encoding='utf-8') as f:
+        clear_record_json_format = json.load(f)
+
+    for key, values in clear_record_json_format.items():
+        for time_text, path in values:
+            clear_time = datetime.datetime.strptime(time_text, '%M:%S:%f')
+            clear_record[key].append([clear_time, path])
+
 
 
 if __name__ == '__main__':
