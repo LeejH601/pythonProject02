@@ -117,7 +117,8 @@ def extractionData(image_name_list, root=None):
                 with open(final_path, mode='w+b') as f:
                     encoded_img_ori.tofile(f)
 
-            data = [text, clear_time, final_path]
+            now_day = datetime.datetime.now()
+            data = [text, clear_time, final_path, now_day]
             list.append(data)
 
         else:
@@ -127,8 +128,8 @@ def extractionData(image_name_list, root=None):
             except OSError:
                 if not os.path.isdir(path):
                     raise
-
-            final_path = path + '/' + img_name
+            now_time = datetime.datetime.now()
+            final_path = path + '/' + now_time.strftime('%Y%m%d%H%M%S_1.jpg')
             result, encoded_img_ori = cv2.imencode('.jpg', img_original)
             if result:
                 with open(final_path, mode='w+b') as f:

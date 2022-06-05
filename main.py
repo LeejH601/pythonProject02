@@ -2,6 +2,8 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import datetime
+import os.path
 import tkinter.ttk
 from tkinter import *
 from tkinter.ttk import *
@@ -9,6 +11,9 @@ from tkinter import filedialog
 import ClearRecordManager as CRM
 from functools import partial
 from PIL import Image, ImageTk
+import keyboard
+import winsound
+import time
 
 
 def stop(event=None):
@@ -56,9 +61,9 @@ def select_clear_record(index):
         widget.destroy()
 
     row = 0
-    for time, path in CRM.clear_record[questName]:
+    for time, path, day in CRM.clear_record[questName]:
         time_text = time.strftime('%M:%S:') + time.strftime('%f')[:2]
-        text_label = Label(time_list_frame, text=questName + ' │ ' + time_text)
+        text_label = Label(time_list_frame, text=questName + ' │ ' + time_text + ' │ ' + str(day))
         text_label.configure(background='white')
         Button(time_list_frame,image=photo_icon,width=2, command=partial(open_recored_image, path)).grid(row=row, column=0)
         text_label.grid(row=row, column=1)
@@ -82,19 +87,80 @@ def select_Sortby(event=None):
 
 
 def select_Sortby_ForQuest(event=None):
+    global index, quest_list
     for widget in main_list_frame.winfo_children():
         widget.destroy()
 
+    selection = comboBox_quest.get()
+    CRM.sortQuest(True)
+    # if selection == '오름차순':
+    #     CRM.sortQuest(True)
+    # elif selection == '내림차순':
+    #     CRM.sortQuest(False)
 
-
-    quest_list = []
+    quest_list.clear()
     index = 0
-    for quest_name in CRM.clear_record.keys():
-        quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
-        quest_button.pack(fill=X, expand=True)
-        quest_list.append(quest_button)
-        index += 1
+    if selection == '오름차순':
+        for quest_name in CRM.clear_record.keys():
+            quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
+            quest_button.pack(fill=X, expand=True)
+            quest_list.append(quest_button)
+            index += 1
+    elif selection == '내림차순':
+        for quest_name in list(CRM.clear_record.keys())[::-1]:
+            quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
+            quest_button.pack(fill=X, expand=True)
+            quest_list.append(quest_button)
+            index += 1
 
+
+def start_wait_input_sound():
+    winsound.Beep(440, 200)
+    winsound.Beep(440, 200)
+
+
+def end_wait_input_sound():
+    winsound.Beep(440, 200)
+    winsound.Beep(440, 200)
+    winsound.Beep(440, 200)
+
+
+def extractForinputScreenshot():
+    winsound.Beep(400, 500)
+    now_time = datetime.datetime.now()
+    new_screenshot_name = now_time.strftime('%Y%m%d%H%M%S_1.jpg')
+    # print(new_screenshot_name)
+
+    path = orignal_image_address + '/' + new_screenshot_name
+    # print(path)
+
+    wait_timer = 1.0
+    while True:
+        if os.path.isfile(path):
+            break
+
+        time.sleep(0.3)
+        wait_timer -= 0.3
+        if wait_timer <= 0:
+            break
+    if wait_timer <= 0:
+        now_time = now_time - datetime.timedelta(seconds=1)
+        new_screenshot_name = now_time.strftime('%Y%m%d%H%M%S_1.jpg')
+        path = orignal_image_address + '/' + new_screenshot_name
+        wait_timer = 1.0
+
+        while True:
+            if os.path.isfile(path):
+                break
+
+            time.sleep(0.3)
+            wait_timer -= 0.3
+            if wait_timer <= 0:
+                return None
+
+    CRM.extractScreenshot(path, recodeed_address)
+    select_Sortby_ForQuest()
+    return True
 
 
 orignal_image_address = ""
@@ -102,6 +168,10 @@ recodeed_address = "C:/Proejcts/pythonProject02/my_record"
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+
+    keyboard.add_hotkey('F12', extractForinputScreenshot)
+    start_wait_input_sound()
+
     CRM.loadrecord(recodeed_address)
     # CRM.testSetRaod(recodeed_address)
     # CRM.saverecord(recodeed_address)
@@ -122,6 +192,10 @@ if __name__ == '__main__':
     folder_icon_img = Image.open('folder_icon.png')
     resize_folder_img = folder_icon_img.resize((15, 15))
     folder_icon = ImageTk.PhotoImage(resize_folder_img)
+
+    list_frame_image = Image.open('frame1.png')
+    list_resize_image = list_frame_image.resize((180, 20))
+    list_Frame_icon = ImageTk.PhotoImage(list_resize_image)
 
     first_label_frame = LabelFrame()
     first_label_frame.pack(fill=BOTH, padx=20, pady=5)
@@ -181,7 +255,7 @@ if __name__ == '__main__':
     quest_list = []
     index = 0
     for quest_name in CRM.clear_record.keys():
-        quest_button = Button(main_list_frame, text=quest_name, command=partial(select_clear_record, index))
+        quest_button = Button(main_list_frame,text=quest_name, command=partial(select_clear_record, index))
         quest_button.pack(fill=X, expand=True)
         quest_list.append(quest_button)
         index += 1

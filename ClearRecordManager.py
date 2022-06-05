@@ -21,13 +21,16 @@ image_list = [
     ]
 
 def insertData(data):
-    clear_record[data[0]].append([data[1],data[2]])
+    clear_record[data[0]].append([data[1],data[2],data[3]])
 
 
-def extractScreenshot(path):
+def extractScreenshot(path, root):
     image_name_list = []
     image_name_list.append(path)
-    readScreenshot.extractionData(image_name_list)
+    data_list = readScreenshot.extractionData(image_name_list, root)
+    for data in data_list:
+        insertData(data)
+    saverecord(root)
 
 
 def testSetRaod(root=None):
@@ -42,8 +45,9 @@ def testSetRaod(root=None):
 
 
 def sortQuest(isAscending=True):
+    global clear_record
     if isAscending:
-        pass
+        clear_record = dict(sorted(clear_record.items()))
 
 
 def sortQuestByTime(isAscending=True):
@@ -62,9 +66,9 @@ def saverecord(root):
     clear_record_json_format = defaultdict(list)
 
     for key, values in clear_record.items():
-        for time, path in values:
+        for time, path, day in values:
             time_text = time.strftime('%M:%S:') + time.strftime('%f')[:2]
-            clear_record_json_format[key].append([time_text, path])
+            clear_record_json_format[key].append([time_text, path, str(day)])
 
     try:
         os.makedirs(root)
@@ -85,9 +89,9 @@ def loadrecord(root):
         clear_record_json_format = json.load(f)
 
     for key, values in clear_record_json_format.items():
-        for time_text, path in values:
+        for time_text, path, day in values:
             clear_time = datetime.datetime.strptime(time_text, '%M:%S:%f')
-            clear_record[key].append([clear_time, path])
+            clear_record[key].append([clear_time, path, datetime.datetime.strptime(day,'%Y-%m-%d %H:%M:%S.%f')])
 
 
 
