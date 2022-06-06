@@ -59,10 +59,37 @@ def extractionData(image_name_list, root=None):
         # cv2.drawContours(temp_img,contours=contours,contourIdx=-1,color=(255,255,255))
 
         img_croped_level = cv2.getRectSubPix(
-            img_original,
+            img_gray,
             patchSize=(150, 30),
             center=(230, 115)
         )
+
+        # img_croped_level = cv2.GaussianBlur(img_croped_level, (1,1), 0)
+        #
+        # # _, img_croped_level_trh = cv2.threshold(img_croped_level, 105, 255, cv2.THRESH_BINARY_INV)
+        # img_croped_level_trh = cv2.adaptiveThreshold(
+        #         img_croped_level,
+        #         maxValue=255.0,
+        #         adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #         thresholdType=cv2.THRESH_BINARY,
+        #         blockSize=19,
+        #         C=5
+        #     )
+        # contours, hierachy = cv2.findContours(img_croped_level_trh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        #
+        # rects = [cv2.boundingRect(each) for each in contours]
+        #
+        # rects=sorted(rects, key=lambda x: x[2]+x[3] )
+        # thinkness = abs(rects[0][2] - rects[1][2])*2
+        #
+        # # cv2.drawContours(img_croped_level, contours, -1, (255,255,255))
+        #
+        # for rect in rects:
+        #     print(rect)
+        #     cv2.circle(img_croped_level, (rect[0],rect[1]), 1, (255,255,255),-1)
+        #     cv2.circle(img_croped_level, (rect[0]+rect[2], rect[1]+rect[3]), 1, (255,255,255),-1)
+        #     cv2.rectangle(img_croped_level, (rect[0],rect[1]), (rect[0]+rect[2], rect[1]+rect[3]), (255,255,255), 1)
+        #
 
         img_croped_quest = cv2.getRectSubPix(
             img_gray,
@@ -92,6 +119,11 @@ def extractionData(image_name_list, root=None):
 
         # level_text = pytesseract.image_to_string(img_croped_level, lang='eng')
         # print(level_text)
+        #
+        # plt.figure(figsize=(11,7))
+        # plt.imshow(img_croped_level, cmap='gray')
+        #
+        # plt.show()
 
         text = pytesseract.image_to_string(img_croped_quest, lang='kor')
         text = text.replace('\n', '')
@@ -135,12 +167,6 @@ def extractionData(image_name_list, root=None):
                 with open(final_path, mode='w+b') as f:
                     encoded_img_ori.tofile(f)
 
-
-
-        # plt.figure(figsize=(11,7))
-        # plt.imshow(img_croped_level, cmap='gray')
-        #
-        # plt.show()
 
 
     return list

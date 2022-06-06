@@ -100,6 +100,6 @@ if __name__ == '__main__':
     for data in data_list:
         insertData(data)
 
-    for quest_name, times in clear_record.items():
-        for time in times:
-            print(quest_name, time)
+    # for quest_name, times in clear_record.items():
+    #     for time in times:
+    #         print(quest_name, time)
