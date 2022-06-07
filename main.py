@@ -63,11 +63,14 @@ def select_clear_record(index):
     row = 0
     for time, path, day in CRM.clear_record[questName]:
         time_text = time.strftime('%M:%S:') + time.strftime('%f')[:2]
-        text_label = Label(time_list_frame, text=questName + ' │ ' + time_text + ' │ ' + str(day))
+        text_label = Label(time_list_frame, text=questName + ' │ ' + time_text + ' │ ' + str(day), borderwidth="1",
+                     relief="solid")
         text_label.configure(background='white')
-        Button(time_list_frame,image=photo_icon,width=2, command=partial(open_recored_image, path)).grid(row=row, column=0)
-        text_label.grid(row=row, column=1)
+        Button(time_list_frame,image=photo_icon,width=2, command=partial(open_recored_image, path)).grid(row=row, column=0,sticky='ns')
+        text_label.grid(row=row, column=1,sticky='ns')
         row += 1
+
+    updateTimeList()
 
     # time_listbox.delete(0, END)
     # index = 0
@@ -160,8 +163,16 @@ def extractForinputScreenshot():
 
     CRM.extractScreenshot(path, recodeed_address)
     select_Sortby_ForQuest()
+    updateMainList()
     return True
 
+def updateMainList():
+    main_list_canvas.update_idletasks()
+    main_list_canvas.configure(scrollregion=main_list_canvas.bbox("all"))
+
+def updateTimeList():
+    time_list_canvas.update_idletasks()
+    time_list_canvas.configure(scrollregion=time_list_canvas.bbox("all"))
 
 orignal_image_address = ""
 recodeed_address = "C:/Proejcts/pythonProject02/my_record"
@@ -172,12 +183,15 @@ if __name__ == '__main__':
     keyboard.add_hotkey('F12', extractForinputScreenshot)
     start_wait_input_sound()
 
+    getFolder_r()
+    getFolder_sht()
+
     CRM.loadrecord(recodeed_address)
     # CRM.testSetRaod(recodeed_address)
     # CRM.saverecord(recodeed_address)
+    # CRM.updateNewFolderLocate(recodeed_address)
 
-    getFolder_r()
-    getFolder_sht()
+
 
     main_window = Tk()
     main_window.title('기록보관소')
@@ -243,10 +257,25 @@ if __name__ == '__main__':
         orient=VERTICAL,
         command=main_list_canvas.yview
     )
+    main_list_scrollbar_horizon = tkinter.ttk.Scrollbar(
+        main_list_Label_frame,
+        orient=HORIZONTAL,
+        command=main_list_canvas.xview
+    )
     main_list_canvas.configure(yscrollcommand=main_list_scrollbar.set)
-    main_list_canvas.bind('<Configure>', lambda e: main_list_canvas.configure(scrollregion = main_list_canvas.bbox("all")))
+    main_list_canvas.configure(xscrollcommand=main_list_scrollbar_horizon.set)
+    main_list_canvas.bind('<Configure>', lambda x: main_list_canvas.configure(scrollregion = main_list_canvas.bbox("all")))
 
+
+    def downMainListofMousewheel(event=None):
+        if event.delta < 0:
+            main_list_canvas.yview('scroll', 1, 'units')
+        else:
+            main_list_canvas.yview('scroll', -1, 'units')
+
+    main_list_scrollbar.bind('<MouseWheel>', downMainListofMousewheel)
     main_list_scrollbar.pack(fill=Y, side=RIGHT)
+    main_list_scrollbar_horizon.pack(side=BOTTOM, fill=X)
     main_list_canvas.pack()
 
     main_list_frame = Frame(main_list_canvas)
@@ -266,23 +295,37 @@ if __name__ == '__main__':
     time_list_Label_frame.pack(side=RIGHT, pady=20, padx=20)
 
     time_list_canvas = Canvas(time_list_Label_frame)
+
     time_list_scrollbar = tkinter.ttk.Scrollbar(
         time_list_Label_frame,
         orient=VERTICAL,
         command=time_list_canvas.yview
     )
+    time_list_scrollbar_horizon = tkinter.ttk.Scrollbar(
+        time_list_Label_frame,
+        orient=HORIZONTAL,
+        command=time_list_canvas.xview
+    )
 
     time_list_canvas.configure(yscrollcommand=time_list_scrollbar.set)
     time_list_canvas.configure(background='white')
-    time_list_canvas.bind('<Configure>',
-                          lambda e: time_list_canvas.configure(scrollregion=time_list_canvas.bbox("all")))
+    time_list_canvas.configure(xscrollcommand=time_list_scrollbar_horizon.set)
 
-    time_list_scrollbar.pack(side=RIGHT, fill=BOTH)
+    def downTimeListofMousewheel(event=None):
+        if event.delta < 0:
+            time_list_canvas.yview('scroll', 1, 'units')
+        else:
+            time_list_canvas.yview('scroll', -1, 'units')
+
+    time_list_scrollbar.pack(side=RIGHT, fill=Y)
+    time_list_canvas.bind('<MouseWheel>', downTimeListofMousewheel)
+    time_list_scrollbar_horizon.pack(side=BOTTOM, fill=X)
     time_list_canvas.pack()
 
     time_list_frame = Frame(time_list_canvas)
-    time_list_canvas.create_window((0, 0), window=time_list_frame,  anchor="nw")
+    time_list_canvas.create_window((0, 0), window=time_list_frame, anchor="nw")
 
+    # time_list_canvas.bind('<Configure>', updateTimeList())
 
     check_box_frame = Frame(main_window)
     check_box_frame.pack(side=LEFT)

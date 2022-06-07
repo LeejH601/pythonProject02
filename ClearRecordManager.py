@@ -43,6 +43,13 @@ def testSetRaod(root=None):
             print(quest_name, time)
 
 
+def updateNewFolderLocate(root):
+    for quest, values in clear_record.items():
+        for value in values:
+            time_text = value[0].strftime('%M분 %S초 ') + value[0].strftime('%f')[:2]
+            final_path = root + '/' + quest + '/' + quest + ' ' + time_text + '.jpg'
+            value[1] = final_path
+
 
 def sortQuest(isAscending=True):
     global clear_record

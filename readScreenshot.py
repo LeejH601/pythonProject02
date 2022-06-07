@@ -127,33 +127,13 @@ def extractionData(image_name_list, root=None):
 
         text = pytesseract.image_to_string(img_croped_quest, lang='kor')
         text = text.replace('\n', '')
+        text = text.replace(':','')
         # print(text)
         test_text = pytesseract.image_to_string(img_croped_time, lang=None)
         time_text = re.sub(r'[^0-9]','',test_text)
         # print(time_text)
 
-        if len(time_text) > 5:
-            clear_time = datetime.datetime.strptime(time_text, '%M%S%f')
-            # time_text = clear_time.strftime('%M:%S:') + clear_time.strftime('%f')[:2]
-            # print(time_text)
-            path = root + '/' + str(text)
-            try:
-                os.makedirs(path)
-            except OSError:
-                if not os.path.isdir(path):
-                    raise
-            time_text = clear_time.strftime('%M분 %S초 ') + clear_time.strftime('%f')[:2]
-            final_path = path + '/' + text + ' ' + time_text + '.jpg'
-            result, encoded_img_ori = cv2.imencode('.jpg', img_original)
-            if result:
-                with open(final_path, mode='w+b') as f:
-                    encoded_img_ori.tofile(f)
-
-            now_day = datetime.datetime.now()
-            data = [text, clear_time, final_path, now_day]
-            list.append(data)
-
-        else:
+        def failedDataProcessing():
             path = root + '/분류실패'
             try:
                 os.makedirs(path)
@@ -166,6 +146,32 @@ def extractionData(image_name_list, root=None):
             if result:
                 with open(final_path, mode='w+b') as f:
                     encoded_img_ori.tofile(f)
+
+        if len(time_text) > 5:
+                clear_time = datetime.datetime.strptime(time_text, '%M%S%f')
+                # time_text = clear_time.strftime('%M:%S:') + clear_time.strftime('%f')[:2]
+                # print(time_text)
+                path = root + '/' + str(text)
+                try:
+                    os.makedirs(path)
+                except OSError:
+                    if not os.path.isdir(path):
+                        raise
+                time_text = clear_time.strftime('%M분 %S초 ') + clear_time.strftime('%f')[:2]
+                final_path = path + '/' + text + ' ' + time_text + '.jpg'
+                result, encoded_img_ori = cv2.imencode('.jpg', img_original)
+                if result:
+                    with open(final_path, mode='w+b') as f:
+                        encoded_img_ori.tofile(f)
+
+                now_day = datetime.datetime.now()
+                data = [text, clear_time, final_path, now_day]
+                list.append(data)
+
+
+        else:
+            failedDataProcessing()
+
 
 
 
