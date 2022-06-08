@@ -38,6 +38,14 @@ def selectFolder_sht():
         with open('oriFolder.txt','w') as f:
             f.write(dir_name)
 
+def AddExtractScreenshotFromFile():
+    file_names =  filedialog.askopenfilenames(title='Select image files',
+                                           filetypes=(("image files (.jpg)", "*.jpg"), ("image files (.png)", "*.png"), ("all files", "*.*")))
+    for file_name in file_names:
+        CRM.extractScreenshot(file_name, recodeed_address)
+        select_Sortby_ForQuest()
+        updateMainList()
+
 
 def getFolder_sht():
     global orignal_image_address
@@ -189,7 +197,7 @@ if __name__ == '__main__':
     CRM.loadrecord(recodeed_address)
     # CRM.testSetRaod(recodeed_address)
     # CRM.saverecord(recodeed_address)
-    # CRM.updateNewFolderLocate(recodeed_address)
+    CRM.updateNewFolderLocate(recodeed_address)
 
 
 
@@ -329,6 +337,8 @@ if __name__ == '__main__':
 
     check_box_frame = Frame(main_window)
     check_box_frame.pack(side=LEFT)
+
+    button_select_scrExt = Button()
 
     combo_quest_label = LabelFrame(check_box_frame, text='퀘스트 정렬 기준')
     combo_quest_label.pack()
