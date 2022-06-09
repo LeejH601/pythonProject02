@@ -3,6 +3,7 @@ from collections import defaultdict
 import json
 import datetime
 import os
+import cv2
 
 
 clear_record = defaultdict(list)
@@ -32,6 +33,28 @@ def extractScreenshot(path, root):
         insertData(data)
     saverecord(root)
 
+def addData(root, filename, quest, time):
+    img_original = cv2.imread(filename)
+    clear_time = datetime.datetime.strptime(time, '%M%S%f')
+    # time_text = clear_time.strftime('%M:%S:') + clear_time.strftime('%f')[:2]
+    # print(time_text)
+    path = root + '/' + str(quest)
+    try:
+        os.makedirs(path)
+    except OSError:
+        if not os.path.isdir(path):
+            raise
+    time_text = clear_time.strftime('%M분 %S초 ') + clear_time.strftime('%f')[:2]
+    final_path = path + '/' + quest + ' ' + time_text + '.jpg'
+    result, encoded_img_ori = cv2.imencode('.jpg', img_original)
+    if result:
+        with open(final_path, mode='w+b') as f:
+            encoded_img_ori.tofile(f)
+
+    now_day = datetime.datetime.now()
+    data = [quest, clear_time, final_path, now_day]
+    insertData(data)
+    saverecord(root)
 
 def testSetRaod(root=None):
     data_list = readScreenshot.extractionData(image_list, root)

@@ -14,6 +14,7 @@ from PIL import Image, ImageTk
 import keyboard
 import winsound
 import time
+import ctypes
 
 
 def stop(event=None):
@@ -47,6 +48,43 @@ def AddExtractScreenshotFromFile():
         updateMainList()
 
 
+def AddOneselfData():
+    file_name = filedialog.askopenfilename(title='Select image files',filetypes=(("image files (.jpg)", "*.jpg"), ("image files (.png)", "*.png"),("all files", "*.*")))
+
+    if file_name:
+
+        sub_window = Tk()
+        sub_window.title('직접 추가')
+        sub_window.geometry('+0+0')
+        sub_window.resizable(False, False)
+        sub_window.bind('<Escape>', stop)
+
+        screenshot_name_label = Label(sub_window, text=file_name, borderwidth=1, border=True)
+        screenshot_name_label.pack(padx=10, pady=10)
+
+        entry_frame = Frame(sub_window)
+        entry_frame.pack(pady=5, padx=5)
+
+        quest_entry_label = Label(entry_frame, text="퀘스트 이름:")
+        quest_entry_label.grid(row=0, column=0)
+        quest_entry = Entry(entry_frame)
+        quest_entry.grid(row=0, column=1)
+
+        clear_time_label = Label(entry_frame, text="클리어 타임:")
+        clear_time_label.grid(row=1, column=0)
+        clear_time_entry = Entry(entry_frame)
+        clear_time_entry.grid(row=1, column=1)
+
+        def addrecord():
+            CRM.addData(recodeed_address, file_name, quest_entry.get(), clear_time_entry.get())
+            select_Sortby_ForQuest()
+            updateMainList()
+            sub_window.destroy()
+
+        button_enter = Button(sub_window, command=addrecord)
+        button_enter.pack(pady=5, padx=5)
+
+
 def getFolder_sht():
     global orignal_image_address
     with open('oriFolder.txt', 'r') as f:
@@ -72,10 +110,10 @@ def select_clear_record(index):
     for time, path, day in CRM.clear_record[questName]:
         time_text = time.strftime('%M:%S:') + time.strftime('%f')[:2]
         text_label = Label(time_list_frame, text=questName + ' │ ' + time_text + ' │ ' + str(day), borderwidth="1",
-                     relief="solid")
+                     relief="solid", background='blue')
         text_label.configure(background='white')
-        Button(time_list_frame,image=photo_icon,width=2, command=partial(open_recored_image, path)).grid(row=row, column=0,sticky='ns')
-        text_label.grid(row=row, column=1,sticky='ns')
+        Button(time_list_frame,image=photo_icon,width=2, command=partial(open_recored_image, path)).grid(row=row, column=0,padx=1)
+        text_label.grid(row=row, column=2)
         row += 1
 
     updateTimeList()
@@ -123,6 +161,14 @@ def select_Sortby_ForQuest(event=None):
             quest_button.pack(fill=X, expand=True)
             quest_list.append(quest_button)
             index += 1
+
+    main_list_frame.update()
+
+    button_img = ImageTk.PhotoImage(
+        list_frame_image.resize((main_list_frame.winfo_width() + 10, 22)))
+
+    for q_button in quest_list:
+        q_button.configure(image=button_img, compound=CENTER)
 
 
 def start_wait_input_sound():
@@ -200,9 +246,12 @@ if __name__ == '__main__':
     CRM.updateNewFolderLocate(recodeed_address)
 
 
-
+    winId = 'myMHWIrecord'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(winId)
     main_window = Tk()
     main_window.title('기록보관소')
+    main_window.iconbitmap('mhwicon.ico')
+    main_window.call('wm', 'iconphoto', main_window._w, PhotoImage(file='mhwrogo.png'))
     main_window.geometry('+0+0')
     main_window.resizable(False, False)
     main_window.bind('<Escape>', stop)
@@ -216,10 +265,15 @@ if __name__ == '__main__':
     folder_icon = ImageTk.PhotoImage(resize_folder_img)
 
     list_frame_image = Image.open('frame1.png')
-    list_resize_image = list_frame_image.resize((180, 20))
-    list_Frame_icon = ImageTk.PhotoImage(list_resize_image)
+    # list_resize_image = list_frame_image.resize((180, 20))
+    list_Frame_icon = ImageTk.PhotoImage(list_frame_image)
 
-    first_label_frame = LabelFrame()
+    # bg_img = PhotoImage(file='logo_iceborne_l.png')
+
+    background_label_frame = LabelFrame()
+    background_label_frame.pack()
+
+    first_label_frame = LabelFrame(background_label_frame)
     first_label_frame.pack(fill=BOTH, padx=20, pady=5)
 
     screenshot_label = Label(first_label_frame, text='스팀 스크린샷 폴더 위치:')
@@ -235,7 +289,7 @@ if __name__ == '__main__':
 
 
 
-    second_label_frame = LabelFrame()
+    second_label_frame = LabelFrame(background_label_frame)
     second_label_frame.pack(fill=BOTH, padx=20, pady=5)
 
     record_data_label = Label(second_label_frame, text='저장 폴더 위치:')
@@ -249,8 +303,10 @@ if __name__ == '__main__':
     address_of_record_data_entry.pack(side=RIGHT, pady=5, padx=5)
     address_of_record_data_entry.insert(0, recodeed_address)
 
+    total_main_frame = LabelFrame(background_label_frame)
+    total_main_frame.pack(padx=20, pady=5)
 
-    main_list_Label_frame = LabelFrame(width=20, height=20)
+    main_list_Label_frame = LabelFrame(total_main_frame, width=20, height=20, text='퀘스트')
     main_list_Label_frame.pack(side=LEFT,pady=20, padx=20)
 
     # main_listbox = Listbox(main_list_frame)
@@ -296,10 +352,19 @@ if __name__ == '__main__':
         quest_button.pack(fill=X, expand=True)
         quest_list.append(quest_button)
         index += 1
+    main_list_frame.update()
+
+    button_img = ImageTk.PhotoImage(
+        list_frame_image.resize((main_list_frame.winfo_width()+10, 22)))
+
+    for q_button in quest_list:
+        q_button.configure(image=button_img, compound=CENTER)
+
+    updateMainList()
 
 
 
-    time_list_Label_frame = LabelFrame()
+    time_list_Label_frame = LabelFrame(total_main_frame, text='클리어 기록')
     time_list_Label_frame.pack(side=RIGHT, pady=20, padx=20)
 
     time_list_canvas = Canvas(time_list_Label_frame)
@@ -335,10 +400,17 @@ if __name__ == '__main__':
 
     # time_list_canvas.bind('<Configure>', updateTimeList())
 
-    check_box_frame = Frame(main_window)
+    check_box_frame = Frame(total_main_frame)
     check_box_frame.pack(side=LEFT)
 
-    button_select_scrExt = Button()
+    buttons_frame = LabelFrame(check_box_frame, text='지정하여 추가하기')
+    buttons_frame.pack(fill=BOTH, padx=5, pady=20)
+
+    button_select_scrExt = Button(buttons_frame, text='경로로 데이터 추가', command=AddExtractScreenshotFromFile)
+    button_select_scrExt.pack(fill=BOTH, padx=5, pady=5)
+
+    button_select_oneself = Button(buttons_frame, text='직접 추가', command=AddOneselfData)
+    button_select_oneself.pack(fill=BOTH, padx=5, pady=5)
 
     combo_quest_label = LabelFrame(check_box_frame, text='퀘스트 정렬 기준')
     combo_quest_label.pack()
@@ -353,6 +425,12 @@ if __name__ == '__main__':
     comboBox_time.pack(side=RIGHT,padx=5,pady=5)
     comboBox_time.current(0)
     comboBox_time.bind('<<ComboboxSelected>>', select_Sortby)
+
+
+
+
+
+
 
 
     main_window.mainloop()
